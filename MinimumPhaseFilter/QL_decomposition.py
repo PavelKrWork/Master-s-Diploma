@@ -1,36 +1,55 @@
 import numpy as np
 
-def HouseHolderQL(B: np.array, is_complex: True) -> tuple:
-    el_type = complex if is_complex else float
-        
+def QL_factorize(B: np.array) -> tuple:
+    B = np.array(B, dtype=complex)
     M, N = B.shape
-    Q = np.eye(M, dtype=el_type)
-    L = B.astype(el_type)
+    K = min(M, N)
     
-    for i in range(N-1, -1, -1):
-        b = L[:, i]
-        k = M - i
-
-        if is_complex:
-            ang = np.angle(b[-1])
-            alpha = np.linalg.norm(b)
-            alpha_tilde = np.exp(1j * ang) * alpha
-            
-            e = np.zeros(M, dtype=el_type)
-            e[k - 1] = 1
-            v = b + alpha_tilde * e
-            
-            U_k = np.exp(-1j * ang) * (2 * np.outer(v, v.conj()) / np.linalg.norm(v)**2 - np.eye(M))
-
+    B_hat = np.copy(B)
+    
+    # Список для хранения матриц U_k
+    U_list = []
+    
+    for k in range(1, K + 1):
+        # Выделяем последний столбец B_hat
+        b = B_hat[:, -1]
+        
+        k_tilde = M - k + 1
+        k_tilde_idx = k_tilde - 1
+        
+        alpha = np.linalg.norm(b)
+        alpha_tilde = np.exp(1j * np.angle(b[k_tilde_idx])) * alpha
+        e_k = np.zeros(len(b), dtype=complex)
+        e_k[k_tilde_idx] = 1
+        v = b + alpha_tilde * e_k
+        
+        # Строим матрицу отражения Хаусхолдера
+        v_norm_sq = np.linalg.norm(v)**2
+        if v_norm_sq != 0:
+            U_k_small = np.exp(-1j * np.angle(b[k_tilde_idx])) * (
+                2 * np.outer(v, v.conj()) / v_norm_sq - np.eye(len(b))
+            )
         else:
-            e = np.zeros(M, dtype=el_type)
-            e[-1] = 1
-            alpha = np.linalg.norm(b)
-            v = b + alpha * e
-            
-            U_k = 2 * np.outer(v, v) / np.linalg.norm(v)**2 - np.eye(M)
-            
-        L = U_k @ L
-        Q = Q @ U_k.conj().T if is_complex else Q @ U_k.T
+            U_k_small = np.eye(len(b), dtype=complex)
+        
+        B_hat = U_k_small @ B_hat
+        
+        # Расширяем U_k_small до полной матрицы MxM для сохранения
+        U_k_full = np.eye(M, dtype=complex)
+        start_idx = M - len(b)
+        U_k_full[start_idx:, start_idx:] = U_k_small
+        
+        U_list.append(U_k_full)
+        
+        if k < K:
+            B_hat = B_hat[:-1, :-1]
     
-    return Q, L
+    L = np.copy(B)
+    for U_k in U_list:
+        L = U_k @ L
+    
+    Q = np.eye(M, dtype=complex)
+    for U_k in reversed(U_list):
+        Q = U_k.conj().T @ Q
+    
+    return L, Q
