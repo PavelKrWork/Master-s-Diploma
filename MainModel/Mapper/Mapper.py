@@ -12,7 +12,6 @@ class Modulator:
             self._bit_to_idx = { (0,):0, (1,):1 }
 
         elif self.modulation == 'qpsk':
-            # Gray mapping: 00->1+j, 01->1-j, 11->-1-j, 10->-1+j
             s = np.array([1+1j, 1-1j, -1-1j, -1+1j]) / np.sqrt(2)
             self.constellation = s
             self.bits_per_symbol = 2
@@ -21,9 +20,8 @@ class Modulator:
             }
 
         elif self.modulation == '16qam':
-            # 4x4 Gray mapping, нормировка на sqrt(10)
             pam4 = np.array([-3, -1, 1, 3])
-            gray = [0,1,3,2]  # индексы для PAM-4 с Греем
+            gray = [0,1,3,2]
             scale = np.sqrt(10.0)
             const = []
             mapping = {}
@@ -41,7 +39,6 @@ class Modulator:
             self._bit_to_idx = mapping
 
         elif self.modulation == '64qam':
-            # 8x8 Gray mapping, нормировка на sqrt(42)
             pam8 = np.array([-7,-5,-3,-1,1,3,5,7])
             gray = [0,1,3,2,6,7,5,4]  # 3-битный Грей
             scale = np.sqrt(42.0)
