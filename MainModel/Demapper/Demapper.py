@@ -28,4 +28,26 @@ class HardDemapper(DemapperBase):
 
 class SoftDemapper(DemapperBase):
     def demodulate(self, received_signal, noise_variance) -> list:
-        pass
+        n_symbols = len(received_signal)
+        total_bits = n_symbols * self.bits_per_symbol
+        llrs = [0.0] * total_bits
+
+        for i, r in enumerate(received_signal):
+            dists = [abs(r - p) ** 2 for p in self.points]
+
+            for bit_pos in range(self.bits_per_symbol):
+                min_dist_0 = float('inf')
+                min_dist_1 = float('inf')
+
+                for idx, d in enumerate(dists):
+                    if self.idx_to_bits[idx][bit_pos] == 0:
+                        if d < min_dist_0:
+                            min_dist_0 = d
+                    else:
+                        if d < min_dist_1:
+                            min_dist_1 = d
+
+                llr = (min_dist_0 - min_dist_1) / (2 * noise_variance)
+                llrs[i * self.bits_per_symbol + bit_pos] = llr
+
+        return llrs

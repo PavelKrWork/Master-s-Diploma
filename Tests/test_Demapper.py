@@ -3,11 +3,12 @@ sys.path.insert(1, '../Master-s-Diploma/MainModel')
 
 
 from Mapper.Mapper import Mapper
-from Demapper.Demapper import HardDemapper
+from Demapper.Demapper import HardDemapper, SoftDemapper
 from Constellation.Constellation import Constellation
 import numpy as np
 
 test_bits = [1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0]
+noise_variance = 0.01
 
 print("Initial bits: \n", test_bits)
 
@@ -19,6 +20,9 @@ print("BPSK modulation: \n", symbols_bpsk)
 demapper = HardDemapper(const_bpsk)
 demod_bpsk_bits = demapper.demodulate(symbols_bpsk)
 print("BPSK demodulated bits: \n", demod_bpsk_bits)
+demapper_soft = SoftDemapper(const_bpsk)
+llrs_bpsk = demapper_soft.demodulate(symbols_bpsk, noise_variance)
+print("BPSK demodulated llrs: \n", llrs_bpsk)
 
 print()
 
@@ -30,6 +34,9 @@ print("QPSK modulation: \n", symbols_qpsk)
 demapper = HardDemapper(const_qpsk)
 demod_qpsk_bits = demapper.demodulate(symbols_qpsk)
 print("BPSK demodulated bits: \n", demod_qpsk_bits)
+demapper_soft = SoftDemapper(const_qpsk)
+llrs_qpsk = demapper_soft.demodulate(symbols_qpsk, noise_variance)
+print("BPSK demodulated llrs: \n", llrs_qpsk)
 
 print()
 
@@ -41,6 +48,9 @@ print("16QAM modulation: \n", symbols_16qam)
 demapper = HardDemapper(const_16qam)
 demod_16qam_bits = demapper.demodulate(symbols_16qam)
 print("BPSK demodulated bits: \n", demod_16qam_bits)
+demapper_soft = SoftDemapper(const_16qam)
+llrs_16qam = demapper_soft.demodulate(symbols_16qam, noise_variance)
+print("BPSK demodulated llrs: \n", llrs_16qam)
 
 print()
 
@@ -52,3 +62,6 @@ print("64QAM modulation: \n", symbols_64qam)
 demapper = HardDemapper(const_64qam)
 demod_64qam_bits = demapper.demodulate(symbols_64qam)
 print("BPSK demodulated bits: \n", demod_64qam_bits)
+demapper_soft = SoftDemapper(const_64qam)
+llrs_64qam = demapper_soft.demodulate(symbols_64qam, noise_variance)
+print("BPSK demodulated llrs: \n", llrs_64qam)
